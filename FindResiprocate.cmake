@@ -90,6 +90,44 @@ endif()
 list(SORT _Resiprocate_TEST_VERSIONS)
 list(REVERSE _Resiprocate_TEST_VERSIONS)
 
+############################
+# Find include directories
+############################
+if (Resiprocate_INCLUDE_DIR)
+    set(Resiprocate_INCLUDE_SEARCH_PATHS ${Resiprocate_INCLUDE_DIR} NO_DEFAULT_PATH)
+else()
+    set(Resiprocate_INCLUDE_SEARCH_PATHS "")
+    if (Resiprocate_INCLUDEDIR)
+        list(APPEND Resiprocate_INCLUDE_SEARCH_PATHS ${Resiprocate_INCLUDEDIR})
+    endif()
+    if (Resiprocate_ROOT_DIR)
+        list(APPEND Resiprocate_INCLUDE_SEARCH_PATHS
+            ${Resiprocate_ROOT_DIR}
+            ${Resiprocate_ROOT_DIR}/include)
+    endif()
+
+    if(Resiprocate_NO_SYSTEM_PATHS)
+        list(APPEND Resiprocate_INCLUDE_SEARCH_PATHS NO_CMAKE_SYSTEM_PATH)
+    else()
+        list(APPEND Resiprocate_INCLUDE_SEARCH_PATHS
+            c:/resiprocate
+            c:/resiprocate/include
+            /sw/local/include)
+    endif()
+endif()
+
+find_path(_Resiprocate_Include_Dir_Probe NAMES resip/stack/SipStack.hxx PATHS ${Resiprocate_INCLUDE_SEARCH_PATHS})
+if (NOT "${_Resiprocate_Include_Dir_Probe}" STREQUAL "_Resiprocate_Include_Dir_Probe-NOTFOUND")
+    set (Resiprocate_INCLUDE_DIR ${_Resiprocate_Include_Dir_Probe})
+else()
+    if (WIN32)
+        set (Resiprocate_INCLUDE_DIR "${RESIPROCATE_ROOT_DIR}")
+    endif()
+endif()
+
+############################
+# Find libraries
+############################
 macro(_Resiprocate_FIND_LIBRARY_BY_NAME _component _known_names output_is_found output_library_name)
     list(FIND Resiprocate_FIND_COMPONENTS _component _using_component)
     if (NOT Resiprocate_FIND_COMPONENTS OR _using_component GREATER -1)
@@ -139,18 +177,13 @@ else()
     endif()
 endif()
 
-
 if (WIN32)
     if ("${Resiprocate_ROOT_DIR}" STREQUAL "")
         set (Resiprocate_ROOT_DIR d:/Development/git/resiprocate-1.9.7)
     endif()
-    set (Resiprocate_INCLUDE_DIR "${RESIPROCATE_ROOT_DIR}")
     set (Resiprocate_LIBRARY_DIR "${RESIPROCATE_ROOT_DIR}/${Platform}/${CMAKE_CFG_INTDIR}")
     set (Resiprocate_LIBRARIES resiprocate rutil reprolib dum)
 elseif(UNIX)
-    if (NOT "${Resiprocate_ROOT_DIR}" STREQUAL "")
-        set (Resiprocate_INCLUDE_DIR "${Resiprocate_ROOT_DIR}")
-    endif()
     _Resiprocate_FIND_LIBRARY_BY_NAME(rutil  "rutil"             Resiprocate_Rutil_FOUND   Resiprocate_Rutil_LIBRARY_NAME)
     _Resiprocate_FIND_LIBRARY_BY_NAME(resip  "resip;resiprocate" Resiprocate_Resip_FOUND   Resiprocate_Resip_LIBRARY_NAME)
     _Resiprocate_FIND_LIBRARY_BY_NAME(repro  "repro"             Resiprocate_Repro_FOUND   Resiprocate_Repro_LIBRARY_NAME)
@@ -176,17 +209,18 @@ elseif(UNIX)
     endif()
 endif()
 
-set (Resiprocate_INCLUDE_DIRS ${RESIPROCATE_INCLUDE_DIR})
-set (Resiprocate_LIBRARY_DIRS ${RESIPROCATE_LIBRARY_DIR})
+###############################
+
+set (Resiprocate_INCLUDE_DIRS ${Resiprocate_INCLUDE_DIR})
+set (Resiprocate_LIBRARY_DIRS ${Resiprocate_LIBRARY_DIR})
 
 if (Resiprocate_DEBUG)
-    message(STATUS "Resiprocate testing versions= ${_Resiprocate_TEST_VERSIONS}")
-    message(STATUS "Resiprocate_ROOT_DIR        = ${Resiprocate_ROOT_DIR}")
-    message(STATUS "Resiprocate_FOUND           = ${Resiprocate_FOUND}")
-    message(STATUS "Resiprocate_LIBRARIES       = ${Resiprocate_LIBRARIES}")
-    message(STATUS "Resiprocate_INCLUDE_DIRS    = ${Resiprocate_INCLUDE_DIRS}")
-    message(STATUS "Resiprocate_LIBRARY_DIRS    = ${Resiprocate_LIBRARY_DIRS}")
-    message(STATUS "_Resiprocate_ATLEAST_ONE_COMPONENT_NOT_FOUND = '${_Resiprocate_ATLEAST_ONE_COMPONENT_NOT_FOUND}'")
-    message(STATUS "_Resiprocate_COMPONENTS_FOUND = '${_Resiprocate_COMPONENTS_FOUND}'")
+    message(STATUS "Resiprocate_ROOT_DIR             = ${Resiprocate_ROOT_DIR}")
+    message(STATUS "Resiprocate_FOUND                = ${Resiprocate_FOUND}")
+    message(STATUS "Resiprocate_LIBRARIES            = ${Resiprocate_LIBRARIES}")
+    message(STATUS "Resiprocate_INCLUDE_DIRS         = ${Resiprocate_INCLUDE_DIRS}")
+    message(STATUS "Resiprocate_LIBRARY_DIRS         = ${Resiprocate_LIBRARY_DIRS}")
+    message(STATUS "Resiprocate_INCLUDE_SEARCH_PATHS = '${Resiprocate_INCLUDE_SEARCH_PATHS}'")
     message(STATUS "Resiprocate_LIBRARY_SEARCH_PATHS = '${Resiprocate_LIBRARY_SEARCH_PATHS}'")
+    message(STATUS "Resiprocate testing versions     = ${_Resiprocate_TEST_VERSIONS}")
 endif()
