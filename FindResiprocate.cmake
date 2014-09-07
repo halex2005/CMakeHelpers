@@ -15,13 +15,41 @@
 #  Resiprocate_LIBRARIES        - Resiprocate component libraries to be linked
 #  Resiprocate_<C>_FOUND        - True if component <C> was found (<C> is upper-case)
 #  Resiprocate_<C>_LIBRARY      - Libraries to link for component <C> (may include
-
+#                                 target_link_libraries debug/optimized keywords)
+#
 # This module reads hints about search locations from variables:
 #  Resiprocate_ROOT             - Preferred installation prefix
 #   (or ResiprocateROOT)
 #  Resiprocate_ADDITIONAL_VERSIONS
 #                         - List of Resiprocate versions not known to this module
 #                           (Resiprocate install locations may contain the version)
+#  Resiprocate_INCLUDEDIR - Preferred include directory e.g. <prefix>/include
+#  Resiprocate_LIBRARYDIR - Preferred library directory e.g. <prefix>/lib
+#  Resiprocate_NO_SYSTEM_PATHS  - Set to ON to disable searching in locations not
+#                                 specified by these hint variables. Default is OFF.
+#
+# You can set additional messages output with `set (Resiprocate_DEBUG ON)`
+#
+# Components are:
+#  rutil
+#  resip
+#  dum
+#  repro
+#  reflow
+#  recon
+#=============================================================================
+# Copyright 2014 halex2005 <akharlov@gmail.com>
+#
+# Distributed under Apache v2.0 License (the "License");
+# see accompanying file LICENSE for details.
+#
+# This software is distributed WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the License for more information.
+#=============================================================================
+# (To distribute this file outside of CMakeHelpers, substitute the full
+#  License text for the above reference.)
+#=============================================================================
 
 cmake_minimum_required(VERSION 2.8)
 
@@ -184,12 +212,12 @@ if (WIN32)
     set (Resiprocate_LIBRARY_DIR "${RESIPROCATE_ROOT_DIR}/${Platform}/${CMAKE_CFG_INTDIR}")
     set (Resiprocate_LIBRARIES resiprocate rutil reprolib dum)
 elseif(UNIX)
-    _Resiprocate_FIND_LIBRARY_BY_NAME(rutil  "rutil"             Resiprocate_Rutil_FOUND   Resiprocate_Rutil_LIBRARY_NAME)
-    _Resiprocate_FIND_LIBRARY_BY_NAME(resip  "resip;resiprocate" Resiprocate_Resip_FOUND   Resiprocate_Resip_LIBRARY_NAME)
-    _Resiprocate_FIND_LIBRARY_BY_NAME(repro  "repro"             Resiprocate_Repro_FOUND   Resiprocate_Repro_LIBRARY_NAME)
-    _Resiprocate_FIND_LIBRARY_BY_NAME(dum    "dum"               Resiprocate_Dum_FOUND     Resiprocate_Dum_LIBRARY_NAME)
-    _Resiprocate_FIND_LIBRARY_BY_NAME(recon  "recon"             Resiprocate_Recon_FOUND   Resiprocate_Recon_LIBRARY_NAME)
-    _Resiprocate_FIND_LIBRARY_BY_NAME(reflow "reflow"            Resiprocate_Reflow_FOUND  Resiprocate_Reflow_LIBRARY_NAME)
+    _Resiprocate_FIND_LIBRARY_BY_NAME(rutil  "rutil"             Resiprocate_RUTIL_FOUND   Resiprocate_RUTIL_LIBRARY)
+    _Resiprocate_FIND_LIBRARY_BY_NAME(resip  "resip;resiprocate" Resiprocate_RESIP_FOUND   Resiprocate_RESIP_LIBRARY)
+    _Resiprocate_FIND_LIBRARY_BY_NAME(repro  "repro"             Resiprocate_REPRO_FOUND   Resiprocate_REPRO_LIBRARY)
+    _Resiprocate_FIND_LIBRARY_BY_NAME(dum    "dum"               Resiprocate_DUM_FOUND     Resiprocate_DUM_LIBRARY)
+    _Resiprocate_FIND_LIBRARY_BY_NAME(recon  "recon"             Resiprocate_RECON_FOUND   Resiprocate_RECON_LIBRARY)
+    _Resiprocate_FIND_LIBRARY_BY_NAME(reflow "reflow"            Resiprocate_REFLOW_FOUND  Resiprocate_REFLOW_LIBRARY)
 
     if (NOT "${_Resiprocate_ATLEAST_ONE_COMPONENT_NOT_FOUND}" STREQUAL "")
         set(Resiprocate_FOUND 0)
