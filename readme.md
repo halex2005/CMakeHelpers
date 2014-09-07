@@ -49,3 +49,4 @@ Licensing
 CMakeHelpers is distributed under [Apache v2.0 License](LICENSE).
 
 [![PayPayl donate button](http://img.shields.io/paypal/donate.png?color=yellow)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=7RR8B7SRHFX5Q "Donate once-off to this project using Paypal")
+[![Gittip donate button](http://img.shields.io/gittip/docpad.png)](https://www.gittip.com/halex2005/ "Donate weekly to this project using Gittip")
