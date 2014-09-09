@@ -38,7 +38,7 @@ function(_PJSIP_GUESS_COMPILER_PREFIX _ret)
   elseif (UNIX)
     set(_PJSIP_COMPILER "")
   else()
-    # TODO at least CppRest_DEBUG here?
+    # TODO at least PJSIP_DEBUG here?
     set(_PJSIP_COMPILER "")
   endif()
   set(${_ret} ${_PJSIP_COMPILER} PARENT_SCOPE)
