@@ -157,7 +157,7 @@ endif()
 # Find libraries
 ############################
 macro(_Resiprocate_FIND_LIBRARY_BY_NAME _component _known_names output_is_found output_library_name)
-    list(FIND Resiprocate_FIND_COMPONENTS _component _using_component)
+    list(FIND Resiprocate_FIND_COMPONENTS ${_component} _using_component)
     if (NOT Resiprocate_FIND_COMPONENTS OR _using_component GREATER -1)
         set(_search_names "")
         foreach (version ${_Resiprocate_TEST_VERSIONS})
@@ -243,6 +243,9 @@ set (Resiprocate_INCLUDE_DIRS ${Resiprocate_INCLUDE_DIR})
 set (Resiprocate_LIBRARY_DIRS ${Resiprocate_LIBRARY_DIR})
 
 if (Resiprocate_DEBUG)
+    message(STATUS "Resiprocate_FIND_COMPONENTS      = ${Resiprocate_FIND_COMPONENTS}")
+    message(STATUS "Resiprocate_FIND_VERSION         = ${Resiprocate_FIND_VERSION}")
+    message(STATUS "Resiprocate_FIND_VERSION_EXACT   = ${Resiprocate_FIND_VERSION_EXACT}")
     message(STATUS "Resiprocate_ROOT_DIR             = ${Resiprocate_ROOT_DIR}")
     message(STATUS "Resiprocate_FOUND                = ${Resiprocate_FOUND}")
     message(STATUS "Resiprocate_LIBRARIES            = ${Resiprocate_LIBRARIES}")
