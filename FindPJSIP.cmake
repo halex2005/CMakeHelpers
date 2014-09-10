@@ -64,19 +64,31 @@ endfunction()
 #
 # Setup environment
 #
+#-------------------------------------------------------------------------------
+# If PJSIP_DIR is not set, look for PJSIPROOT and PJSIP_ROOT
+# as alternatives, since these are more conventional for PJSIP.
+if ("$ENV{PJSIP_DIR}" STREQUAL "")
+    if (NOT "$ENV{PJSIP_ROOT}" STREQUAL "")
+        set(ENV{PJSIP_DIR} $ENV{PJSIP_ROOT})
+    elseif (NOT "$ENV{PJSIPROOT}" STREQUAL "")
+        set(ENV{PJSIP_DIR} $ENV{PJSIPROOT})
+    endif()
+endif()
+mark_as_advanced(PJSIP_DIR)
+set(PJSIP_ROOT_DIR $ENV{PJSIP_DIR})
+
 if(WIN32)
-    set (PJSIP_ROOT_DIR "d:/Development/git/pjsip/dependencies/pjproject-2.2.1")
     set (PJSIP_INCLUDE_DIR ${PJSIP_ROOT_DIR})
     set (PJSIP_LIBRARY_DIR ${PJSIP_ROOT_DIR}/lib)
     set (PJSIP_LIBRARY_DIRS ${PJSIP_LIBRARY_DIR})
 
     _PJSIP_GUESS_COMPILER_PREFIX(PJSIP_COMPILER)
 
-    find_path(PJSIP_PJLIB_INCLUDE_DIR pjlib.h "${PJLIB_ROOT_DIR}/pjlib/include")
-    find_path(PJSIP_PJLIB_UTIL_INCLUDE_DIR pjlib-util.h "${PJLIB_ROOT_DIR}/pjlib-util/include")
-    find_path(PJSIP_PJMEDIA_INCLUDE_DIR pjmedia.h "${PJLIB_ROOT_DIR}/pjmedia/include")
-    find_path(PJSIP_PJNATH_INCLUDE_DIR pjnath.h "${PJLIB_ROOT_DIR}/pjnath/include")
-    find_path(PJSIP_PJSIP_INCLUDE_DIR pjsip.h "${PJLIB_ROOT_DIR}/pjsip/include")
+    find_path(PJSIP_PJLIB_INCLUDE_DIR      NAMES "pjlib.h"      PATHS "${PJSIP_ROOT_DIR}/pjlib/include")
+    find_path(PJSIP_PJLIB_UTIL_INCLUDE_DIR NAMES "pjlib-util.h" PATHS "${PJSIP_ROOT_DIR}/pjlib-util/include")
+    find_path(PJSIP_PJMEDIA_INCLUDE_DIR    NAMES "pjmedia.h"    PATHS "${PJSIP_ROOT_DIR}/pjmedia/include")
+    find_path(PJSIP_PJNATH_INCLUDE_DIR     NAMES "pjnath.h"     PATHS "${PJSIP_ROOT_DIR}/pjnath/include")
+    find_path(PJSIP_PJSIP_INCLUDE_DIR      NAMES "pjsip.h"      PATHS "${PJSIP_ROOT_DIR}/pjsip/include")
 
     set (PJSIP_INCLUDE_DIR
         ${PJSIP_PJLIB_INCLUDE_DIR}
