@@ -1,4 +1,4 @@
-prefix=@PJSIP_ROOT_DIR@
+prefix=@PJSIP_ROOT_DIR_FOR_PKGCONFIG@
 exec_prefix=${prefix}
 libdir=${prefix}/lib
 includedir=${prefix}/pjlib/include;${prefix}/pjlib-util/include;${prefix}/pjmedia/include;${prefix}/pjnath/include;${prefix}/pjsip/include
@@ -7,5 +7,5 @@ Name: libpjproject
 Description: Multimedia communication library
 URL: http://www.pjsip.org
 Version: @PJSIP_VERSION@
-Libs: -L${libdir} libpjproject-$$(Platform)-$$(PlatformToolset)-$$(Configuration)-$$(@PJSIP_CRT_LINKAGE@).lib
+Libs: -L${libdir} -llibpjproject-$$(Platform)-$$(PlatformToolset)-$$(Configuration)-@PJSIP_CRT_LINKAGE@.lib
 Cflags: -I${includedir}

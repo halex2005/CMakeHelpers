@@ -15,72 +15,105 @@ endif()
 mark_as_advanced(PJSIP_DIR)
 set(PJSIP_ROOT_DIR $ENV{PJSIP_DIR})
 
-if(WIN32)
-    set(PJSIP_VERSION 2.3.0)
+if (NOT DEFINED PJSIP_REGENERATE_PKGCONFIG)
+    set (PJSIP_REGENERATE_PKGCONFIG OFF)
+endif()
+
+if (WIN32)
+    if (NOT DEFINED PJSIP_USE_BUILD_FROM_SOURCE)
+        set (PJSIP_USE_BUILD_FROM_SOURCE ON)
+    endif()
+    if (NOT DEFINED PJSIP_USE_PKGCONFIG)
+        set (PJSIP_USE_PKGCONFIG OFF)
+    endif()
+    if (NOT DEFINED PJSIP_USE_STATIC_RUNTIME)
+        set (PJSIP_USE_STATIC_RUNTIME OFF)
+    endif()
+endif()
+
+if (UNIX)
+    if (NOT DEFINED PJSIP_USE_PKGCONFIG)
+        set (PJSIP_USE_PKGCONFIG ON)
+    endif()
+    if (NOT DEFINED PJSIP_USE_BUILD_FROM_SOURCE)
+        set (PJSIP_USE_BUILD_FROM_SOURCE OFF)
+    endif()
+endif()
+
+
+#-------------------------------------------------------------------------------
+#
+# Get version
+#
+#-------------------------------------------------------------------------------
+if(PJSIP_USE_BUILD_FROM_SOURCE)
+    # try to get actual version from PJSIP source directory
+    if (EXISTS ${PJSIP_ROOT_DIR}/version.mak)
+        file(STRINGS "${PJSIP_ROOT_DIR}/version.mak" PJSIP_VERSION_STRINGS)
+        FOREACH(i IN LISTS PJSIP_VERSION_STRINGS)
+            string(REGEX REPLACE "export PJ_VERSION_MAJOR.*:=.*([0-9]+)" "\\1" _PJSIP_TEMP_ "${i}")
+            if (NOT "${_PJSIP_TEMP_}" STREQUAL "${i}")
+                set (PJSIP_VERSION_MAJOR ${_PJSIP_TEMP_})
+            endif()
+            string(REGEX REPLACE "export PJ_VERSION_MINOR.*:=.*([0-9]+)" "\\1" _PJSIP_TEMP_ "${i}")
+            if (NOT "${_PJSIP_TEMP_}" STREQUAL "${i}")
+                set (PJSIP_VERSION_MINOR ${_PJSIP_TEMP_})
+            endif()
+            string(REGEX REPLACE "export PJ_VERSION_REV.*:=.*([0-9]+)" "\\1" _PJSIP_TEMP_ "${i}")
+            if (NOT "${_PJSIP_TEMP_}" STREQUAL "${i}")
+                set (PJSIP_VERSION_REV ${_PJSIP_TEMP_})
+            endif()
+        ENDFOREACH()
+
+        set (PJSIP_VERSION_MAJOR_MINOR "${PJSIP_VERSION_MAJOR}.${PJSIP_VERSION_MINOR}")
+        set (PJSIP_VERSION "${PJSIP_VERSION_MAJOR_MINOR}.${PJSIP_VERSION_REV}")
+        if (PJSIP_DEBUG)
+            message(STATUS "found version ${PJSIP_VERSION} from ${PJSIP_ROOT_DIR}/version.mak")
+        endif()
+    else()
+        set(PJSIP_VERSION "0.0.0")
+        if (PJSIP_DEBUG)
+            message(STATUS "there is no file ${PJSIP_ROOT_DIR}/version.mak, version set to ${PJSIP_VERSION}")
+        endif()
+    endif()
+
     if (PJSIP_USE_STATIC_RUNTIME)
         set(PJSIP_CRT_LINKAGE Static)
     else()
         set(PJSIP_CRT_LINKAGE Dynamic)
     endif()
+endif()
 
-    find_package(PkgConfig)
-    if (PkgConfig_FOUND)
-        if (NOT ${PKG_CONFIG_PATH} STREQUAL "" AND IS_DIRECTORY ${PKG_CONFIG_PATH})
-            # environment variable PKG_CONFIG_PATH exists and it is directory
-            if (NOT EXISTS ${PKG_CONFIG_PATH}/libpjproject.pc)
-                configure_file(${CMAKE_CURRENT_LIST_DIR}/libpjproject.in ${PKG}/libpjproject.pc)
-            endif()
+
+#-------------------------------------------------------------------------------
+#
+# Discover PJSIP
+#
+#-------------------------------------------------------------------------------
+if (PJSIP_USE_PKGCONFIG)
+    if (PJSIP_DEBUG)
+        message(STATUS "using PkgConfig to discover pjsip")
+    endif()
+
+    if (NOT $ENV{PKG_CONFIG_PATH} STREQUAL "" AND IS_DIRECTORY $ENV{PKG_CONFIG_PATH})
+        # environment variable PKG_CONFIG_PATH exists and it is directory
+        string(REPLACE "\\" "/" PJSIP_ROOT_DIR_FOR_PKGCONFIG ${PJSIP_ROOT_DIR})
+        if (NOT EXISTS "$ENV{PKG_CONFIG_PATH}/libpjproject.pc" OR PJSIP_REGENERATE_PKGCONFIG)
+            message (STATUS "generate $ENV{PKG_CONFIG_PATH}/libpjproject.pc")
+            configure_file(${CMAKE_CURRENT_LIST_DIR}/libpjproject.pc.in "$ENV{PKG_CONFIG_PATH}/libpjproject.pc" @ONLY)
         else()
-            # there is no PKG_CONFIG_PATH environment variable
-        endif()
-        if (PJSIP_FIND_VERSION)
-            if (PJSIP_FIND_VERSION_EXACT)
-                pkg_check_modules(PJSIP libpjproject=${PJSIP_FIND_VERSION} REQUIRED)
-            else()
-                pkg_check_modules(PJSIP libpjproject>=${PJSIP_FIND_VERSION} REQUIRED)
-            endif()
-        else()
-            pkg_check_modules(PJSIP libpjproject REQUIRED)
+            message (STATUS "found $ENV{PKG_CONFIG_PATH}/libpjproject.pc, no regenerate")
         endif()
     else()
-        if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
-            set(PJSIP_TargetCPU "x86_64")
-        else()
-            set(PJSIP_TargetCPU "i386")
-        endif()
-
-        find_path(PJSIP_PJLIB_INCLUDE_DIR      NAMES "pjlib.h"      PATHS "${PJSIP_ROOT_DIR}/pjlib/include")
-        find_path(PJSIP_PJLIB_UTIL_INCLUDE_DIR NAMES "pjlib-util.h" PATHS "${PJSIP_ROOT_DIR}/pjlib-util/include")
-        find_path(PJSIP_PJMEDIA_INCLUDE_DIR    NAMES "pjmedia.h"    PATHS "${PJSIP_ROOT_DIR}/pjmedia/include")
-        find_path(PJSIP_PJNATH_INCLUDE_DIR     NAMES "pjnath.h"     PATHS "${PJSIP_ROOT_DIR}/pjnath/include")
-        find_path(PJSIP_PJSIP_INCLUDE_DIR      NAMES "pjsip.h"      PATHS "${PJSIP_ROOT_DIR}/pjsip/include")
-
-        set (PJSIP_INCLUDE_DIR
-            ${PJSIP_PJLIB_INCLUDE_DIR}
-            ${PJSIP_PJLIB_UTIL_INCLUDE_DIR}
-            ${PJSIP_PJMEDIA_INCLUDE_DIR}
-            ${PJSIP_PJNATH_INCLUDE_DIR}
-            ${PJSIP_PJSIP_INCLUDE_DIR}
-        )
-
-        set (PJSIP_LIBRARY_DIR ${PJSIP_ROOT_DIR}/lib)
-        if (PJSIP_USE_STATIC_RUNTIME)
-            set (PJSIP_LIBRARIES libpjproject-$(Platform)-$(PlatformToolset)-$(Configuration)-Static.lib)
-        else
-            set (PJSIP_LIBRARIES libpjproject-$(Platform)-$(PlatformToolset)-$(Configuration)-Dynamic.lib)
-        endif()
-
-        set (PJSIP_INCLUDE_DIRS ${PJSIP_INCLUDE_DIR})
-        set (PJSIP_LIBRARY_DIRS ${PJSIP_LIBRARY_DIR})
-
-        if ("${PJSIP_INCLUDE_DIRS}" MATCHES "NOTFOUND" OR "${PJSIP_LIBRARY_DIRS}" MATCHES "NOTFOUND")
-            set(PJSIP_FOUND 0)
-        else()
-            set (PJSIP_FOUND 1)
-        endif()
+        message (STATUS "there is no PKG_CONFIG_PATH environment variable, no libpjproject.pc file generated")
     endif()
-elseif(UNIX)
+
     find_package(PkgConfig REQUIRED)
+    if (NOT PKG_CONFIG_FOUND)
+        message(SEND_ERROR "PkgConfig not found")
+        return()
+    endif()
+
     if (PJSIP_FIND_VERSION)
         if (PJSIP_FIND_VERSION_EXACT)
             pkg_check_modules(PJSIP libpjproject=${PJSIP_FIND_VERSION} REQUIRED)
@@ -89,6 +122,45 @@ elseif(UNIX)
         endif()
     else()
         pkg_check_modules(PJSIP libpjproject REQUIRED)
+    endif()
+elseif(PJSIP_USE_BUILD_FROM_SOURCE)
+    if (PJSIP_DEBUG)
+        message(STATUS "not using PkgConfig to discover pjsip")
+    endif()
+    if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+        set(PJSIP_TargetCPU "x86_64")
+    else()
+        set(PJSIP_TargetCPU "i386")
+    endif()
+
+    find_path(PJSIP_PJLIB_INCLUDE_DIR      NAMES "pjlib.h"      PATHS "${PJSIP_ROOT_DIR}/pjlib/include")
+    find_path(PJSIP_PJLIB_UTIL_INCLUDE_DIR NAMES "pjlib-util.h" PATHS "${PJSIP_ROOT_DIR}/pjlib-util/include")
+    find_path(PJSIP_PJMEDIA_INCLUDE_DIR    NAMES "pjmedia.h"    PATHS "${PJSIP_ROOT_DIR}/pjmedia/include")
+    find_path(PJSIP_PJNATH_INCLUDE_DIR     NAMES "pjnath.h"     PATHS "${PJSIP_ROOT_DIR}/pjnath/include")
+    find_path(PJSIP_PJSIP_INCLUDE_DIR      NAMES "pjsip.h"      PATHS "${PJSIP_ROOT_DIR}/pjsip/include")
+
+    set (PJSIP_INCLUDE_DIR
+        ${PJSIP_PJLIB_INCLUDE_DIR}
+        ${PJSIP_PJLIB_UTIL_INCLUDE_DIR}
+        ${PJSIP_PJMEDIA_INCLUDE_DIR}
+        ${PJSIP_PJNATH_INCLUDE_DIR}
+        ${PJSIP_PJSIP_INCLUDE_DIR}
+    )
+
+    set (PJSIP_LIBRARY_DIR "${PJSIP_ROOT_DIR}/lib")
+    if (PJSIP_USE_STATIC_RUNTIME)
+        set (PJSIP_LIBRARIES "libpjproject-\$(Platform)-\$(PlatformToolset)-\$(Configuration)-Static.lib")
+    else()
+        set (PJSIP_LIBRARIES "libpjproject-\$(Platform)-\$(PlatformToolset)-\$(Configuration)-Dynamic.lib")
+    endif()
+
+    set (PJSIP_INCLUDE_DIRS ${PJSIP_INCLUDE_DIR})
+    set (PJSIP_LIBRARY_DIRS ${PJSIP_LIBRARY_DIR})
+
+    if ("${PJSIP_INCLUDE_DIRS}" MATCHES "NOTFOUND" OR "${PJSIP_LIBRARY_DIRS}" MATCHES "NOTFOUND")
+        set(PJSIP_FOUND 0)
+    else()
+        set (PJSIP_FOUND 1)
     endif()
 endif()
 
