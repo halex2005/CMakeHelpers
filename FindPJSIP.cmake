@@ -1,3 +1,38 @@
+# Use this module by invoking find_package with the form:
+#  find_package(PJSIP
+#    [version] [EXACT]      # Minimum or EXACT version e.g. 1.9
+#    [REQUIRED]             # Fail with error if PJSIP is not found
+#    )
+# This module finds headers and requested component libraries OR a CMake
+# package configuration file provided by a "PJSIP CMake" build.  For the
+# latter case skip to the "PJSIP CMake" section below.  For the former
+# case results are reported in variables:
+#  PJSIP_FOUND            - True if headers and requested libraries were found
+#  PJSIP_INCLUDE_DIRS     - PJSIP include directories
+#  PJSIP_LIBRARY_DIRS     - Link directories for PJSIP libraries
+#  PJSIP_LIBRARIES        - PJSIP component libraries to be linked
+#  PJSIP_VERSION          - PJSIP version
+#
+# This module reads hints about search locations from variables:
+#  PJSIP_ROOT             - Preferred installation prefix
+#   (or PJSIPROOT)
+#
+# You can set additional messages output with `set (PJSIP_DEBUG ON)`
+#
+#=============================================================================
+# Copyright 2014 halex2005 <akharlov@gmail.com>
+#
+# Distributed under Apache v2.0 License (the "License");
+# see accompanying file LICENSE for details.
+#
+# This software is distributed WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the License for more information.
+#=============================================================================
+# (To distribute this file outside of CMakeHelpers, substitute the full
+#  License text for the above reference.)
+#=============================================================================
+
 #-------------------------------------------------------------------------------
 #
 # Setup environment
@@ -65,8 +100,8 @@ if(PJSIP_USE_BUILD_FROM_SOURCE)
             endif()
         ENDFOREACH()
 
-        set (PJSIP_VERSION_MAJOR_MINOR "${PJSIP_VERSION_MAJOR}.${PJSIP_VERSION_MINOR}")
-        set (PJSIP_VERSION "${PJSIP_VERSION_MAJOR_MINOR}.${PJSIP_VERSION_REV}")
+        set (PJSIP_VERSION_SHORT "${PJSIP_VERSION_MAJOR}.${PJSIP_VERSION_MINOR}")
+        set (PJSIP_VERSION "${PJSIP_VERSION_SHORT}.${PJSIP_VERSION_REV}")
         if (PJSIP_DEBUG)
             message(STATUS "found version ${PJSIP_VERSION} from ${PJSIP_ROOT_DIR}/version.mak")
         endif()
@@ -74,6 +109,22 @@ if(PJSIP_USE_BUILD_FROM_SOURCE)
         set(PJSIP_VERSION "0.0.0")
         if (PJSIP_DEBUG)
             message(STATUS "there is no file ${PJSIP_ROOT_DIR}/version.mak, version set to ${PJSIP_VERSION}")
+        endif()
+    endif()
+
+    if (PJSIP_FIND_VERSION_EXACT)
+        if (NOT ${PJSIP_VERSION} VERSION_EQUAL ${PJSIP_FIND_VERSION})
+            message(SEND_ERROR "Required exact version ${PJSIP_FIND_VERSION} not found (found version ${PJSIP_VERSION})")
+            return()
+        endif()
+    else()
+        if(PJSIP_FIND_VERSION)
+            if (${PJSIP_VERSION} VERSION_LESS ${PJSIP_FIND_VERSION})
+                message(SEND_ERROR "Required version ${PJSIP_FIND_VERSION} or greater not found (found version ${PJSIP_VERSION})")
+                return()
+            endif()
+        else()
+            # Any version is acceptable.
         endif()
     endif()
 
@@ -171,4 +222,23 @@ if (PJSIP_DEBUG)
     message(STATUS "PJSIP_LIBRARY_DIRS = ${PJSIP_LIBRARY_DIRS}")
     message(STATUS "PJSIP_LIBRARIES    = ${PJSIP_LIBRARIES}")
     message(STATUS "PJSIP_VERSION      = ${PJSIP_VERSION}")
+endif()
+
+if(PJSIP_FOUND)
+else()
+    if(PJSIP_FIND_REQUIRED)
+        message(SEND_ERROR "Unable to find the requested PJSIP libraries.\n${PJSIP_ERROR_REASON}")
+    else()
+        if(NOT PJSIP_FIND_QUIETLY)
+            # we opt not to automatically output PJSIP_ERROR_REASON here as
+            # it could be quite lengthy and somewhat imposing in its requests
+            # Since PJSIP is not always a required dependency we'll leave this
+            # up to the end-user.
+            if(PJSIP_DEBUG OR PJSIP_DETAILED_FAILURE_MSG)
+                message(STATUS "Could NOT find PJSIP\n${PJSIP_ERROR_REASON}")
+            else()
+                message(STATUS "Could NOT find PJSIP")
+            endif()
+        endif()
+    endif()
 endif()
