@@ -198,11 +198,55 @@ elseif(PJSIP_USE_BUILD_FROM_SOURCE)
         ${PJSIP_PJSIP_INCLUDE_DIR}
     )
 
-    set (PJSIP_LIBRARY_DIR "${PJSIP_ROOT_DIR}/lib")
-    if (PJSIP_USE_STATIC_RUNTIME)
-        set (PJSIP_LIBRARIES "libpjproject-\$(Platform)-\$(PlatformToolset)-\$(Configuration)-Static.lib")
-    else()
-        set (PJSIP_LIBRARIES "libpjproject-\$(Platform)-\$(PlatformToolset)-\$(Configuration)-Dynamic.lib")
+    if (WIN32)
+        set (PJSIP_LIBRARY_DIR "${PJSIP_ROOT_DIR}/lib")
+        if (PJSIP_USE_STATIC_RUNTIME)
+            set (PJSIP_LIBRARIES "libpjproject-\$(Platform)-\$(PlatformToolset)-\$(Configuration)-Static.lib")
+        else()
+            set (PJSIP_LIBRARIES "libpjproject-\$(Platform)-\$(PlatformToolset)-\$(Configuration)-Dynamic.lib")
+        endif()
+        set (PJSIP_STATIC_LIBRARIES ${PJSIP_LIBRARIES} Ws2_32.lib)
+    elseif(UNIX)
+        set (PJSIP_LIBRARY_DIR /usr/lib/${PJSIP_TargetCPU}-unknown-linux-gnu)
+        set (PJSIP_LIBRARIES
+            pjsua2-${PJSIP_TargetCPU}-unknown-linux-gnu
+            pjsua-${PJSIP_TargetCPU}-unknown-linux-gnu
+            pjsip-ua-${PJSIP_TargetCPU}-unknown-linux-gnu
+            pjsip-simple-${PJSIP_TargetCPU}-unknown-linux-gnu
+            pjsip-${PJSIP_TargetCPU}-unknown-linux-gnu
+            pjmedia-codec-${PJSIP_TargetCPU}-unknown-linux-gnu
+            pjmedia-${PJSIP_TargetCPU}-unknown-linux-gnu
+            pjmedia-videodev-${PJSIP_TargetCPU}-unknown-linux-gnu
+            pjnath-${PJSIP_TargetCPU}-unknown-linux-gnu
+            pjlib-util-${PJSIP_TargetCPU}-unknown-linux-gnu
+            srtp-${PJSIP_TargetCPU}-unknown-linux-gnu
+            resample-${PJSIP_TargetCPU}-unknown-linux-gnu
+            gsmcodec-${PJSIP_TargetCPU}-unknown-linux-gnu
+            speex-${PJSIP_TargetCPU}-unknown-linux-gnu
+            ilbcodec-${PJSIP_TargetCPU}-unknown-linux-gnu
+            g7221codec-${PJSIP_TargetCPU}-unknown-linux-gnu
+            portaudio-${PJSIP_TargetCPU}-unknown-linux-gnu
+            pj-${PJSIP_TargetCPU}-unknown-linux-gnu
+        )
+        set (PJSIP_STATIC_LIBRARIES
+            ${PJSIP_LIBRARIES}
+            stdc++
+            m
+            rt
+            pthread
+            asound
+            SDL2
+            avformat
+            avcodec
+            swscale
+            avutil
+            v4l2
+            crypto
+            ssl
+            opencore-amrnb
+            opencore-amrwb
+            opencore-amrwbenc
+        )
     endif()
 
     set (PJSIP_INCLUDE_DIRS ${PJSIP_INCLUDE_DIR})
