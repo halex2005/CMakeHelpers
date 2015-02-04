@@ -24,7 +24,7 @@ set (GenerateProductVersionCurrentDir ${CMAKE_CURRENT_LIST_DIR})
 #
 # You can specify resource strings in arguments:
 #   NAME               - name of executable (no defaults, ex: Microsoft Word)
-#   BUNDLE             - bundle             (no defaults, ex: Microsoft Office)
+#   BUNDLE             - bundle (${NAME} is default, ex: Microsoft Office)
 #   ICON               - path to application icon (${CMAKE_SOURCE_DIR}/product.ico by default)
 #   VERSION_MAJOR      - 1 is default
 #   VERSION_MINOR      - 0 is default
@@ -55,6 +55,9 @@ function(generate_product_version outfiles)
     set (multiValueArgs)
     cmake_parse_arguments(PRODUCT "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
+    if (NOT PRODUCT_BUNDLE OR "${PRODUCT_BUNDLE}" STREQUAL "")
+        set(PRODUCT_BUNDLE "${PRODUCT_NAME}")
+    endif()
     if (NOT PRODUCT_ICON OR "${PRODUCT_ICON}" STREQUAL "")
         set(PRODUCT_ICON "${CMAKE_SOURCE_DIR}/product.ico")
     endif()
