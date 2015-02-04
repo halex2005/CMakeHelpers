@@ -1,5 +1,8 @@
 include (CMakeParseArguments)
-# generate_product_version() FUNCTION
+
+set (GenerateProductVersionCurrentDir ${CMAKE_CURRENT_LIST_DIR})
+
+# generate_product_version() function
 #
 # This function uses VersionInfo.in template file and VersionResource.rc file
 # to generate WIN32 resource with version information and general resource strings.
@@ -89,11 +92,11 @@ function(generate_product_version outfiles)
     set (_VersionInfoFile ${CMAKE_CURRENT_BINARY_DIR}/VersionInfo.h)
     set (_VersionResourceFile ${CMAKE_CURRENT_BINARY_DIR}/VersionResource.rc)
     configure_file(
-        ${CMAKE_SOURCE_DIR}/build/VersionInfo.in
+        ${GenerateProductVersionCurrentDir}/VersionInfo.in
         ${_VersionInfoFile}
         @ONLY)
     configure_file(
-        ${CMAKE_SOURCE_DIR}/build/VersionResource.rc
+        ${GenerateProductVersionCurrentDir}/VersionResource.rc
         ${_VersionResourceFile}
         COPYONLY)
     list(APPEND ${outfiles} ${_VersionInfoFile} ${_VersionResourceFile})
