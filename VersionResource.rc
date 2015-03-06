@@ -1,5 +1,5 @@
 #include "VersionInfo.h"
-#include "afxres.h"
+#include "winres.h"
 
 IDI_ICON1               ICON                    PRODUCT_ICON
 
